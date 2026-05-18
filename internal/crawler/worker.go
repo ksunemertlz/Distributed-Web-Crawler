@@ -1,32 +1,51 @@
 package crawler
 
 import (
-	"fmt"
 	"sync"
+
+	"context"
 
 	"github.com/ksunemertlz/web-crawler/internal/fetcher"
 	"github.com/ksunemertlz/web-crawler/internal/parser"
+	"golang.org/x/time/rate"
 )
 
-func Worker(queue chan string, wg *sync.WaitGroup) {
+func Worker(
+	ctx context.Context,
+	queue chan string,
+	store *URLStore,
+	wg *sync.WaitGroup,
+	limiter *rate.Limiter) {
 
-	for url := range queue {
+	for {
+		select {
 
-		fmt.Println("Crawling:", url)
+		case url := <-queue:
 
-		html, err := fetcher.Fetch(url)
-		if err != nil {
+			if !store.Add(url) {
+				wg.Done()
+				continue
+			}
+
+			limiter.Wait(ctx)
+
+			html, err := fetcher.Fetch(url)
+			if err != nil {
+				wg.Done()
+				continue
+			}
+
+			links := parser.ExtractLinks(html)
+
+			for _, link := range links {
+				wg.Add(1)
+				queue <- link
+			}
+
 			wg.Done()
-			continue
+
+		case <-ctx.Done():
+			return
 		}
-
-		links := parser.ExtractLinks(html)
-
-		for _, link := range links {
-			queue <- link
-			wg.Add(1)
-		}
-
-		wg.Done()
 	}
 }
