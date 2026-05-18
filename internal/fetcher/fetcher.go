@@ -12,13 +12,12 @@ func Fetch(url string) (string, error) {
 		return "", err
 	}
 
-	defer resp.Body.Close()
-
 	if resp.StatusCode != http.StatusOK {
 		return "", err
 	}
 
 	body, err := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
 	if err != nil {
 		return "", err
 	}
