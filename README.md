@@ -47,39 +47,35 @@ The crawler downloads web pages, extracts links and publishes them to Kafka for 
 
 # Architecture
 
-Seed URLs
-   ↓
-Crawler Workers
-   ↓
-Fetch HTML
-   ↓
-Extract Links
-   ↓
-Kafka Topic
-   ↓
-Consumer / Storage
+```mermaid
+flowchart TD
+    A[Seed URLs] --> B[Crawler Workers]
+    B --> C[Fetch HTML]
+    C --> D[Extract Links]
+    D --> E[Kafka Topic]
+    E --> F[Consumer / Storage]
+```
 
 # Project Structure
 
 web-crawler
+├── cmd
+│   ├── crawler
+│   │   └── main.go
+│   └── consumer
+│       └── main.go
 │
-cmd/
-   crawler/
-      main.go
-   consumer/
-      main.go
-│
-internal/
-   crawler/
-      worker.go
-      store.go
-   fetcher/
-      fetcher.go
-   parser/
-      parser.go
-   kafka/
-      producer.go
-      consumer.go
+└── internal
+    ├── crawler
+    │   ├── worker.go
+    │   └── store.go
+    ├── fetcher
+    │   └── fetcher.go
+    ├── parser
+    │   └── parser.go
+    └── kafka
+        ├── producer.go
+        └── consumer.go
 
 # Running the Project
 #### 1. Start Kafka
