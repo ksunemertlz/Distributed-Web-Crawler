@@ -58,6 +58,7 @@ flowchart TD
 
 # Project Structure
 
+```text
 web-crawler
 ├── cmd
 │   ├── crawler
@@ -76,6 +77,7 @@ web-crawler
     └── kafka
         ├── producer.go
         └── consumer.go
+```
 
 # Running the Project
 #### 1. Start Kafka
