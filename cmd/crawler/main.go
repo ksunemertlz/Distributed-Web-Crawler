@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/ksunemertlz/web-crawler/internal/crawler"
+	"github.com/ksunemertlz/web-crawler/internal/kafka"
 	"github.com/ksunemertlz/web-crawler/internal/queue"
 	"golang.org/x/time/rate"
 )
@@ -19,6 +20,11 @@ func main() {
 	store := crawler.NewURLStore()
 
 	limiter := rate.NewLimiter(2, 5)
+
+	producer := kafka.NewProducer(
+		"localhost:9092",
+		"crawler-links",
+	)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -35,7 +41,7 @@ func main() {
 	}()
 
 	for i := 0; i < 5; i++ {
-		go crawler.Worker(ctx, urlQueue, store, &wg, limiter)
+		go crawler.Worker(ctx, urlQueue, store, &wg, limiter, producer)
 	}
 
 	startURL := "https://example.com"

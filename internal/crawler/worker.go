@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/ksunemertlz/web-crawler/internal/fetcher"
+	"github.com/ksunemertlz/web-crawler/internal/kafka"
 	"github.com/ksunemertlz/web-crawler/internal/parser"
 	"golang.org/x/time/rate"
 )
@@ -15,7 +16,8 @@ func Worker(
 	queue chan string,
 	store *URLStore,
 	wg *sync.WaitGroup,
-	limiter *rate.Limiter) {
+	limiter *rate.Limiter,
+	producer *kafka.Producer) {
 
 	for {
 		select {
@@ -38,8 +40,7 @@ func Worker(
 			links := parser.ExtractLinks(html)
 
 			for _, link := range links {
-				wg.Add(1)
-				queue <- link
+				producer.Send(ctx, link)
 			}
 
 			wg.Done()
